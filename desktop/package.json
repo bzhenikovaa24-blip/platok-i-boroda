@@ -1,0 +1,16 @@
+{
+  "name": "platok-i-boroda-desktop",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Платок и Борода — настольная версия (Electron, офлайн)",
+  "main": "main.js",
+  "scripts": {
+    "prepare-app": "node prepare.js",
+    "start": "node prepare.js && electron .",
+    "dist": "node prepare.js && electron-packager . PlatokIBoroda --platform=win32 --arch=x64 --icon=app/icon.ico --out=dist --overwrite --asar --ignore=^/dist --app-version=2.0.0 --win32metadata.ProductName=PlatokIBoroda --win32metadata.FileDescription=PlatokIBoroda"
+  },
+  "devDependencies": {
+    "@electron/packager": "^18.3.6",
+    "electron": "^33.2.0"
+  }
+}

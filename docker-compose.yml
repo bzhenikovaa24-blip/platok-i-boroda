@@ -1,0 +1,15 @@
+services:
+  game:
+    build: .
+    image: platok-i-boroda:latest
+    container_name: platok-i-boroda
+    ports:
+      - "3000:3000"
+    volumes:
+      - game-data:/app/data
+    environment:
+      - AUTH_SECRET=${AUTH_SECRET:-change-me-please}
+    restart: unless-stopped
+
+volumes:
+  game-data:

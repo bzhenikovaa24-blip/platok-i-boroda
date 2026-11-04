@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Платок и Борода</title>
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1a1426">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <canvas id="game" width="960" height="600"></canvas>
+
+    <div id="hud" class="hidden">
+      <div class="hud-left">
+        <span id="hud-level">Уровень 1</span>
+        <span class="hud-name" id="hud-name"></span>
+      </div>
+      <div class="hud-center"><span id="hud-time">00:00.0</span></div>
+      <div class="hud-right">
+        <span class="gem-count pink"><i></i><b id="hud-pink">0/0</b></span>
+        <span class="gem-count gold"><i></i><b id="hud-gold">0/0</b></span>
+        <span class="deaths">☠ <b id="hud-deaths">0</b></span>
+        <button class="icon-btn" id="btn-full" title="Во весь экран">⛶</button>
+        <button class="icon-btn" id="btn-pause" title="Пауза (Esc)">❚❚</button>
+      </div>
+    </div>
+
+    <div id="hint" class="hidden"></div>
+    <div id="toast"></div>
+    <div id="ach-toast"></div>
+    <div id="boss-bar" class="hidden"><span id="boss-name"></span><div id="boss-hp"></div></div>
+
+    <section id="screen-menu" class="screen">
+      <div class="menu-card">
+        <div class="brand">
+          <canvas id="avatar" width="128" height="128" aria-hidden="true"></canvas>
+          <div class="logo">
+            <span class="logo-a">Платок</span>
+            <span class="logo-amp">и</span>
+            <span class="logo-b">Борода</span>
+          </div>
+        </div>
+        <p class="tagline">Двое, одна клавиатура и древний храм. Проходите уровни вместе, побеждайте стражей и выясняйте в гонках, кто быстрее.</p>
+        <label class="field">
+          <span>Название команды</span>
+          <input id="team-input" maxlength="24" placeholder="например, Артур и Ко" autocomplete="off">
+        </label>
+        <div class="menu-buttons">
+          <button class="btn primary" id="btn-play">Играть кампанию</button>
+          <button class="btn" id="btn-levels">Уровни</button>
+          <button class="btn accent" id="btn-races">Гонки</button>
+          <button class="btn accent" id="btn-editor">Редактор</button>
+          <button class="btn" id="btn-net">По сети</button>
+          <button class="btn" id="btn-story">Сюжет</button>
+          <button class="btn" id="btn-skins">Образы</button>
+          <button class="btn" id="btn-ach">Достижения</button>
+          <button class="btn" id="btn-records">Рекорды</button>
+          <button class="btn" id="btn-help">Управление</button>
+          <button class="btn" id="btn-settings">Настройки</button>
+          <button class="btn" id="btn-profile">Профиль</button>
+          <button class="btn install hidden" id="btn-install" title="Установить как приложение">Установить</button>
+          <button class="btn quit hidden" id="btn-quit">Выйти из игры</button>
+        </div>
+        <div class="status-line" id="server-status">Подключаюсь к серверу…</div>
+      </div>
+      <canvas id="menu-preview" width="360" height="200"></canvas>
+    </section>
+
+    <section id="screen-levels" class="screen hidden">
+      <div class="panel">
+        <header><h2>Выбор уровня</h2><button class="btn small" data-back>Назад</button></header>
+        <div id="level-grid" class="level-grid"></div>
+      </div>
+    </section>
+
+    <section id="screen-records" class="screen hidden">
+      <div class="panel wide">
+        <header><h2>Рекорды</h2><button class="btn small" data-back>Назад</button></header>
+        <div class="tabs" id="record-tabs"></div>
+        <h3 class="records-level" id="records-level"></h3>
+        <table class="records">
+          <thead><tr><th>#</th><th>Команда</th><th>Время</th><th>Кристаллы</th><th>Смерти</th><th>Звёзды</th></tr></thead>
+          <tbody id="records-body"></tbody>
+        </table>
+        <div class="stats" id="global-stats"></div>
+      </div>
+    </section>
+
+    <section id="screen-races" class="screen hidden">
+      <div class="panel wide">
+        <header><h2>Гонки</h2><button class="btn small" data-back>Назад</button></header>
+        <p class="panel-note">Экран делится пополам: сверху дорожка девочки, снизу — бородача. Трасса у обоих одинаковая, только жижи зеркальные. Кто первым коснётся флага — победил. Упал — вернёшься к своей контрольной точке. Полупрозрачный призрак повторяет ваш лучший заезд на трассе.</p>
+        <div class="race-score" id="race-score"></div>
+        <div id="race-grid" class="level-grid races"></div>
+      </div>
+    </section>
+
+    <section id="screen-achievements" class="screen hidden">
+      <div class="panel wide">
+        <header><h2>Достижения</h2><button class="btn small" data-back>Назад</button></header>
+        <div class="ach-progress"><span id="ach-count"></span><div class="ach-track"><div id="ach-bar"></div></div></div>
+        <div id="ach-grid" class="ach-grid"></div>
+      </div>
+    </section>
+
+    <section id="screen-skins" class="screen hidden">
+      <div class="panel">
+        <header><h2>Образы</h2><span class="wallet">◆ <b id="wallet">0</b></span><button class="btn small" data-back>Готово</button></header>
+        <p class="panel-note">Кристаллы копятся за лучшие прохождения уровней и за гонки. На них открываются новые расцветки.</p>
+        <div class="skins-grid">
+          <div class="skin-card girl">
+            <canvas id="skin-canvas-girl" width="200" height="200"></canvas>
+            <div class="skin-row">
+              <button class="btn small" data-skin="girl" data-step="-1" aria-label="Предыдущий образ">◀</button>
+              <b id="skin-name-girl"></b>
+              <button class="btn small" data-skin="girl" data-step="1" aria-label="Следующий образ">▶</button>
+            </div>
+            <button class="btn small primary hidden" id="skin-buy-girl"></button>
+            <div class="swatches" id="skin-sw-girl"></div>
+          </div>
+          <div class="skin-card boy">
+            <canvas id="skin-canvas-boy" width="200" height="200"></canvas>
+            <div class="skin-row">
+              <button class="btn small" data-skin="boy" data-step="-1" aria-label="Предыдущий образ">◀</button>
+              <b id="skin-name-boy"></b>
+              <button class="btn small" data-skin="boy" data-step="1" aria-label="Следующий образ">▶</button>
+            </div>
+            <button class="btn small primary hidden" id="skin-buy-boy"></button>
+            <div class="swatches" id="skin-sw-boy"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-profile" class="screen hidden">
+      <div class="panel">
+        <header><h2>Профиль</h2><button class="btn small" data-back>Назад</button></header>
+        <p class="panel-note hidden" id="pf-offline">Профили работают, когда игра запущена с сервером (ярлык на рабочем столе). Сейчас игра в офлайн-режиме.</p>
+        <div id="pf-form" class="pf-form">
+          <p class="panel-note">Войди, чтобы прогресс, рекорды и гонки сохранялись за тобой на любом компьютере с этим сервером.</p>
+          <label class="field"><span>Логин</span><input id="pf-user" maxlength="20" autocomplete="username"></label>
+          <label class="field"><span>Пароль</span><input id="pf-pass" type="password" maxlength="64" autocomplete="current-password"></label>
+          <div class="pf-btns"><button class="btn primary" id="pf-login">Войти</button><button class="btn" id="pf-register">Зарегистрироваться</button></div>
+          <div class="pf-err" id="pf-err"></div>
+        </div>
+        <div id="pf-card" class="hidden">
+          <div class="pf-head"><b id="pf-name"></b><button class="btn small" id="pf-logout">Выйти из профиля</button></div>
+          <div class="stats" id="pf-stats"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-net" class="screen hidden">
+      <div class="panel wide">
+        <header><h2>Игра по сети</h2><button class="btn small" data-back>Назад</button></header>
+        <p class="panel-note hidden" id="net-offline">Игра по сети работает только с сервером: запусти игру ярлыком на рабочем столе.</p>
+        <div id="net-main">
+          <p class="panel-note">Два ноутбука в одной Wi-Fi сети. На одном игра запущена ярлыком — он хозяин и играет за девочку. Второй открывает в браузере адрес: <b id="net-addr" class="net-addr">…</b>, жмёт «По сети» и вводит код комнаты. Он играет за бородача. Windows может спросить разрешение для сети — нажми «Разрешить».</p>
+          <div class="net-grid">
+            <div class="net-card">
+              <h3>Я хозяин</h3>
+              <button class="btn primary" id="net-host">Создать комнату</button>
+              <div id="net-host-box" class="hidden">
+                <div class="net-code" id="net-code-big"></div>
+                <label class="field"><span>Уровень</span><select id="net-level" class="net-select"></select></label>
+                <button class="btn primary" id="net-start" disabled>Начать</button>
+              </div>
+            </div>
+            <div class="net-card">
+              <h3>Я подключаюсь</h3>
+              <label class="field"><span>Код комнаты</span><input id="net-code" maxlength="4" inputmode="numeric" placeholder="1234"></label>
+              <button class="btn" id="net-join">Подключиться</button>
+            </div>
+          </div>
+          <div class="net-status" id="net-status"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-settings" class="screen hidden">
+      <div class="panel">
+        <header><h2>Настройки</h2><button class="btn small" id="settings-back">Готово</button></header>
+        <div class="settings">
+          <label class="set-row" for="set-volume"><span>Громкость</span><input type="range" id="set-volume" min="0" max="1" step="0.05"></label>
+          <label class="set-row" for="set-music"><span>Музыка</span><input type="checkbox" id="set-music" class="switch"></label>
+          <label class="set-row" for="set-shake"><span>Тряска экрана</span><input type="checkbox" id="set-shake" class="switch"></label>
+          <label class="set-row" for="set-quality"><span>Графика</span>
+            <select id="set-quality"><option value="high">Высокая: свет, факелы, пылинки</option><option value="low">Быстрая: для слабых ноутбуков</option></select>
+          </label>
+          <div class="set-row"><span>Экран</span><button class="btn small" id="set-full">Во весь экран</button></div>
+        </div>
+        <h3 class="set-h">Геймпады</h3>
+        <p class="panel-note">Подключи один или два геймпада: первый управляет девочкой, второй бородачом. Стик или крестовина — ходьба, A — прыжок, B или X — рычаг, Start — пауза. Клавиатура при этом тоже работает.</p>
+        <div class="pads" id="pads-status"></div>
+      </div>
+    </section>
+
+    <section id="screen-help" class="screen hidden">
+      <div class="panel">
+        <header><h2>Как играть</h2><button class="btn small" data-back>Назад</button></header>
+        <div class="help-grid">
+          <div class="help-card girl">
+            <h3>Девочка в платке</h3>
+            <p><kbd>A</kbd> <kbd>D</kbd> — ходить, <kbd>W</kbd> — прыжок, <kbd>S</kbd> — рычаг</p>
+            <p>Розовая жижа ей нипочём. Золотая — смертельна.</p>
+          </div>
+          <div class="help-card boy">
+            <h3>Бородач в кепке</h3>
+            <p><kbd>←</kbd> <kbd>→</kbd> — ходить, <kbd>↑</kbd> — прыжок, <kbd>↓</kbd> — рычаг</p>
+            <p>Золотая жижа — его стихия. Розовая — смертельна.</p>
+          </div>
+        </div>
+        <ul class="rules">
+          <li>Зелёный яд опасен для обоих.</li>
+          <li>Розовые кристаллы собирает девочка, золотые — бородач.</li>
+          <li>Кнопки работают, пока на них кто-то стоит (или ящик).</li>
+          <li>Уровень пройден, когда оба стоят у своих дверей.</li>
+          <li><kbd>R</kbd> — заново, <kbd>Esc</kbd> — пауза, <kbd>M</kbd> — звук.</li>
+          <li>Можно играть на геймпадах: первый — девочка, второй — бородач (A — прыжок, B — рычаг).</li>
+        </ul>
+      </div>
+    </section>
+
+    <div id="editor" class="hidden">
+      <div class="ed-top">
+        <div class="ed-tools" id="ed-tools"></div>
+      </div>
+      <div class="ed-bottom">
+        <input id="ed-name" maxlength="32" placeholder="Название уровня" aria-label="Название уровня">
+        <button class="btn small primary" id="ed-test">Тест</button>
+        <button class="btn small" id="ed-save">Сохранить</button>
+        <button class="btn small" id="ed-load">По коду</button>
+        <button class="btn small" id="ed-browse">Общие уровни</button>
+        <button class="btn small" id="ed-clear">Очистить</button>
+        <button class="btn small" id="ed-exit">Выйти</button>
+        <span class="ed-msg" id="ed-msg"></span>
+        <div class="ed-code-row hidden" id="ed-code-row"><input id="ed-code" maxlength="8" placeholder="Код, например K3F9QZ" aria-label="Код уровня"><button class="btn small" id="ed-code-go">Открыть</button></div>
+      </div>
+      <div class="ed-list hidden" id="ed-list">
+        <header><b>Общие уровни</b><button class="btn small" id="ed-list-close">Закрыть</button></header>
+        <div id="ed-list-body"></div>
+      </div>
+    </div>
+
+    <div id="story" class="hidden">
+      <canvas id="story-face" width="120" height="120" aria-hidden="true"></canvas>
+      <div class="story-box">
+        <b id="story-name"></b>
+        <p id="story-text"></p>
+        <div class="story-btns"><button class="btn small" id="story-skip">Пропустить</button><button class="btn small primary" id="story-next">Далее ▸</button></div>
+      </div>
+    </div>
+
+    <div id="modal-win" class="modal hidden">
+      <div class="modal-card">
+        <h2 id="win-title">Уровень пройден!</h2>
+        <div class="stars" id="win-stars"></div>
+        <div class="win-stats">
+          <div><span id="win-l1">Время</span><b id="win-time"></b></div>
+          <div><span id="win-l2">Кристаллы</span><b id="win-gems"></b></div>
+          <div><span id="win-l3">Смерти</span><b id="win-deaths"></b></div>
+        </div>
+        <div class="win-note" id="win-note"></div>
+        <div class="modal-buttons">
+          <button class="btn" id="win-retry">Ещё раз</button>
+          <button class="btn" id="win-menu">Меню</button>
+          <button class="btn primary" id="win-next">Дальше</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal-pause" class="modal hidden">
+      <div class="modal-card">
+        <h2>Пауза</h2>
+        <div class="modal-buttons column">
+          <button class="btn primary" id="pause-resume">Продолжить</button>
+          <button class="btn" id="pause-restart">Начать уровень заново</button>
+          <button class="btn" id="pause-sound">Звук: вкл</button>
+          <button class="btn" id="pause-settings">Настройки</button>
+          <button class="btn" id="pause-menu">Выйти в меню</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="levels.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
