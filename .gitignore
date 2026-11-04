@@ -1,0 +1,7 @@
+node_modules/
+server/dist/
+data/
+desktop/node_modules/
+desktop/dist/
+desktop/app/
+*.zip
