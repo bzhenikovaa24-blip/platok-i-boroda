@@ -1,0 +1,12 @@
+**/node_modules
+server/dist
+data
+desktop
+.git
+.github
+tests
+tools/__pycache__
+*.zip
+*.url
+*.bat
+*.vbs
