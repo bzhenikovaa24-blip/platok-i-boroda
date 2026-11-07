@@ -4,14 +4,20 @@ import { Request } from 'express';
 import { networkInterfaces } from 'os';
 import { AppControlService } from './app-control.service';
 
+function isLocal(req: Request) {
+  const ip = req.ip || '';
+  const proxied = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'];
+  return !proxied && ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip);
+}
+
 @ApiTags('Приложение')
 @Controller('app')
 export class AppControlController {
   constructor(private readonly control: AppControlService) {}
 
   @Get()
-  info() {
-    return { appMode: this.control.appMode, version: '2.0.0' };
+  info(@Req() req: Request) {
+    return { appMode: this.control.appMode && isLocal(req), version: '2.0.0' };
   }
 
   @Get('lan')
@@ -26,15 +32,14 @@ export class AppControlController {
 
   @Post('heartbeat')
   @HttpCode(204)
-  heartbeat() {
-    this.control.beat();
+  heartbeat(@Req() req: Request) {
+    if (isLocal(req)) this.control.beat();
   }
 
   @Post('quit')
   quit(@Req() req: Request) {
-    const ip = req.ip || '';
     if (!this.control.appMode) throw new ForbiddenException('Сервер запущен не в режиме приложения');
-    if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip)) throw new ForbiddenException('Только с этого компьютера');
+    if (!isLocal(req)) throw new ForbiddenException('Только с этого компьютера');
     this.control.quit();
     return { ok: true };
   }
